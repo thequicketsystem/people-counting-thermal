@@ -8,8 +8,9 @@ TEMP_MIN, TEMP_MAX = 6, 20
 DEPTH_SCALE_FACTOR = 255.0 / (TEMP_MAX - TEMP_MIN)
 DEPTH_SCALE_BETA_FACTOR = -TEMP_MIN * 255.0 / (TEMP_MAX - TEMP_MIN)
 
-# Source:
+# Sources:
 # https://answers.opencv.org/question/210645/detection-of-people-from-above-with-thermal-camera/
+# https://www.learnopencv.com/blob-detection-using-opencv-python-c/
 
 temp_data = np.empty([2, 2])
 
