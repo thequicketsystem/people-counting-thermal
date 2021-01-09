@@ -1,3 +1,5 @@
+import board
+import busio
 import adafruit_mlx90640 as mlx
 import numpy as np
 import cv2
