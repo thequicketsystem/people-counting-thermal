@@ -98,10 +98,10 @@ def counter() -> None:
 
     # Draw count of blobs on-screen, inside circle, outside circle, and the circle itself
     cv2.putText(temp_data_with_keypoints, f"count: {str(len(keypoints))}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-	cv2.putText(temp_data_with_keypoints, f"in: {insideReaderRange}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-	cv2.putText(temp_data_with_keypoints, f"out: {outsideReaderRange}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        cv2.putText(temp_data_with_keypoints, f"in: {insideReaderRange}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        cv2.putText(temp_data_with_keypoints, f"out: {outsideReaderRange}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.circle(temp_data_with_keypoints, (circleX, circleY), circleR, (0, 255, 255), 2)
-    
+
     cv2.imshow(temp_data_with_keypoints)
 
     cv2.waitKey('q')
