@@ -1,4 +1,4 @@
-import MLX90640 as mlx
+import adafruit_mlx90640 as mlx
 import numpy as np
 import cv2
 from math import sqrt
