@@ -22,10 +22,15 @@ temp_data = np.empty([2, 2])
 circleR  = (IMG_WIDTH * SCALE_FACTOR) // 3
 circleX, circleY = (IMG_WIDTH * SCALE_FACTOR) // 2, (IMG_HEIGHT * SCALE_FACTOR)  // 2
 
+
+i2c = busio.I2C(board.SCL, board.SDA, frequency=800000)
+
+mlx = adafruit_mlx90640.MLX90640(i2c)
+
+mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
+
 def counter() -> None:
-    mlx.setup(30)
-    f = mlx.get_frame()
-    mlx.cleanup()
+    f = mlx.getFrame()
     v_min, v_max = min(f), max(f)
 
     for x in range(IMG_WIDTH):
