@@ -18,7 +18,7 @@ SCALE_FACTOR = 10
 DEPTH_SCALE_FACTOR = 255.0 / (TEMP_MAX - TEMP_MIN)
 DEPTH_SCALE_BETA_FACTOR = -TEMP_MIN * 255.0 / (TEMP_MAX - TEMP_MIN)
 
-temp_data = np.empty([2, 2])
+temp_data = np.empty([IMG_WIDTH, IMG_HEIGHT])
 
 # set up circle dimesions to simulate RFID reader detection area
 circleR  = (IMG_WIDTH * SCALE_FACTOR) // 3
