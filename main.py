@@ -32,7 +32,12 @@ mlx = adafruit_mlx90640.MLX90640(i2c)
 mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
 
 def counter() -> None:
-    f = mlx.getFrame()
+
+    try:
+        f = mlx.getFrame()
+    except ValueError:
+        continue
+
     v_min, v_max = min(f), max(f)
 
     for x in range(IMG_WIDTH):
