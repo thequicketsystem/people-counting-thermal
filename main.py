@@ -43,7 +43,7 @@ while True:
 
     for x in range(IMG_WIDTH):
         for y in range(IMG_HEIGHT):
-            temp_data[x, y] = f[32 * (23 - x) + y]
+            temp_data[x, y] = f[y * IMG_HEIGHT + x]
 
     # Image processing
     temp_data = temp_data * DEPTH_SCALE_FACTOR + DEPTH_SCALE_BETA_FACTOR
