@@ -10,7 +10,7 @@ from math import sqrt
 # https://www.learnopencv.com/blob-detection-using-opencv-python-c/
 # https://github.com/thequicketsystem/people-counting-visual/
 
-IMG_WIDTH, IMG_HEIGHT = 24, 32
+IMG_WIDTH, IMG_HEIGHT = 32, 24
 TEMP_MIN, TEMP_MAX = 6, 20
 
 SCALE_FACTOR = 10
@@ -41,7 +41,7 @@ while True:
 
     for y in range(IMG_HEIGHT):
         for x in range(IMG_WIDTH):
-            temp_data[x, y] = f[y * IMG_HEIGHT + x]
+            temp_data[x, y] = f[y * IMG_WIDTH + x]
 
     # Image processing
     temp_data = temp_data * DEPTH_SCALE_FACTOR + DEPTH_SCALE_BETA_FACTOR
