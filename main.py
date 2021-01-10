@@ -36,7 +36,7 @@ while True:
     try:
         mlx.getFrame(f)
     except ValueError:
-        pass
+        continue
 
     v_min, v_max = min(f), max(f)
 
