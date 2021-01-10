@@ -32,9 +32,10 @@ mlx = adafruit_mlx90640.MLX90640(i2c)
 mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
 
 def counter() -> None:
-
+    f = []
+    
     try:
-        f = mlx.getFrame()
+        mlx.getFrame(f)
     except ValueError:
         continue
 
