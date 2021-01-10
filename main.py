@@ -115,4 +115,4 @@ while True:
 
     cv2.imshow("People Counting Subsystem (Thermal) Demo", temp_data_with_keypoints)
 
-    cv2.waitKey('q')
+    cv2.waitKey(1)
