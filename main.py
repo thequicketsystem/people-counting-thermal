@@ -52,6 +52,8 @@ while True:
     temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTOR), interpolation=cv2.INTER_CUBIC)
     temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
+    colorized_temp_data = cv2.applyColorMap(temp_data, cv2.COLORMAP_JET)
+
     temp_data = cv2.bilateralFilter(temp_data, 9, 150, 150)
     _, temp_data = cv2.threshold(temp_data, 210, 255, cv2.THRESH_BINARY)
 
@@ -107,12 +109,15 @@ while True:
     # Draw circles around blobs and display count on screen
     temp_data_with_keypoints = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
-    # Draw count of blobs on-screen, inside circle, outside circle, and the circle itself
+    # Draw count of blobs inside circle and outside circle, as well as the circle itself
     cv2.putText(temp_data_with_keypoints, f"count: {str(len(keypoints))}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.putText(temp_data_with_keypoints, f"in: {insideReaderRange}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.putText(temp_data_with_keypoints, f"out: {outsideReaderRange}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.circle(temp_data_with_keypoints, (circleX, circleY), circleR, (0, 255, 255), 2)
 
-    cv2.imshow("People Counting Subsystem (Thermal) Demo", temp_data_with_keypoints)
+    # Side-by-side comparison of thermal data and detected blobs
+    composite = np.concatenate((colorIR, temp_data_with_keypoints), axis = 1)
+
+    cv2.imshow("People Counting Subsystem (Thermal) Demo", composite)
 
     cv2.waitKey(1)
