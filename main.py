@@ -43,7 +43,6 @@ while True:
     colorized_temp_data = cv2.applyColorMap(temp_data, cv2.COLORMAP_JET)
 
     temp_data = cv2.bilateralFilter(temp_data, 9, 150, 150)
-    _, temp_data = cv2.threshold(temp_data, 210, 255, cv2.THRESH_BINARY)
 
     kernel = np.ones((5,5), np.uint8)
 
