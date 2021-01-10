@@ -116,7 +116,7 @@ while True:
     cv2.circle(temp_data_with_keypoints, (circleX, circleY), circleR, (0, 255, 255), 2)
 
     # Side-by-side comparison of thermal data and detected blobs
-    composite = np.concatenate((colorIR, temp_data_with_keypoints), axis = 1)
+    composite = np.concatenate((colorized_temp_data, temp_data_with_keypoints), axis = 1)
 
     cv2.imshow("People Counting Subsystem (Thermal) Demo", composite)
 
