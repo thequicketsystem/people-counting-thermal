@@ -24,20 +24,19 @@ temp_data = np.empty([2, 2])
 circleR  = (IMG_WIDTH * SCALE_FACTOR) // 3
 circleX, circleY = (IMG_WIDTH * SCALE_FACTOR) // 2, (IMG_HEIGHT * SCALE_FACTOR)  // 2
 
-
 i2c = busio.I2C(board.SCL, board.SDA, frequency=800000)
 
 mlx = adafruit_mlx90640.MLX90640(i2c)
 
 mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
 
-def counter() -> None:
+while True:
     f = []
-    
+
     try:
         mlx.getFrame(f)
     except ValueError:
-        continue
+        pass
 
     v_min, v_max = min(f), max(f)
 
@@ -118,7 +117,3 @@ def counter() -> None:
     cv2.imshow(temp_data_with_keypoints)
 
     cv2.waitKey('q')
-
-if __name__ == '__main__':
-    while True:
-        counter()
