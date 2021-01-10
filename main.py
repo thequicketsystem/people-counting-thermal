@@ -30,8 +30,9 @@ mlx = adafruit_mlx90640.MLX90640(i2c)
 
 mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
 
+f = [0] * (IMG_WIDTH * IMG_HEIGHT)
+
 while True:
-    f = []
 
     try:
         mlx.getFrame(f)
