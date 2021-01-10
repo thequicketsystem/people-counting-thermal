@@ -37,7 +37,7 @@ while True:
         for x in range(IMG_WIDTH):
             temp_data[x, y] = f[y * IMG_WIDTH + x]
 
-    temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTOR), interpolation=cv2.INTER_CUBIC)
+    temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTOR))
     temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
     colorized_temp_data = cv2.applyColorMap(temp_data, cv2.COLORMAP_JET)
