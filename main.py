@@ -28,13 +28,10 @@ mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
 f = [0] * (IMG_WIDTH * IMG_HEIGHT)
 
 while True:
-
     try:
         mlx.getFrame(f)
     except ValueError:
         continue
-
-    v_min, v_max = min(f), max(f)
 
     for y in range(IMG_HEIGHT):
         for x in range(IMG_WIDTH):
