@@ -15,8 +15,6 @@ TEMP_MIN, TEMP_MAX = 6, 20
 
 SCALE_FACTOR = 10
 
-temp_data = np.empty([IMG_WIDTH, IMG_HEIGHT])
-
 # set up circle dimesions to simulate RFID reader detection area
 circleR  = (IMG_WIDTH * SCALE_FACTOR) // 3
 circleX, circleY = (IMG_WIDTH * SCALE_FACTOR) // 2, (IMG_HEIGHT * SCALE_FACTOR)  // 2
@@ -28,6 +26,8 @@ mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
 f = [0] * (IMG_WIDTH * IMG_HEIGHT)
 
 while True:
+    temp_data = np.empty([IMG_WIDTH, IMG_HEIGHT])
+
     try:
         mlx.getFrame(f)
     except ValueError:
