@@ -113,6 +113,6 @@ while True:
     cv2.putText(temp_data_with_keypoints, f"out: {outsideReaderRange}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.circle(temp_data_with_keypoints, (circleX, circleY), circleR, (0, 255, 255), 2)
 
-    cv2.imshow(temp_data_with_keypoints)
+    cv2.imshow("People Counting Subsystem (Thermal) Demo", temp_data_with_keypoints)
 
     cv2.waitKey('q')
