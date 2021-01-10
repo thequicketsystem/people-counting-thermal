@@ -15,9 +15,6 @@ TEMP_MIN, TEMP_MAX = 6, 20
 
 SCALE_FACTOR = 10
 
-DEPTH_SCALE_FACTOR = 255.0 / (TEMP_MAX - TEMP_MIN)
-DEPTH_SCALE_BETA_FACTOR = -TEMP_MIN * 255.0 / (TEMP_MAX - TEMP_MIN)
-
 temp_data = np.empty([IMG_WIDTH, IMG_HEIGHT])
 
 # set up circle dimesions to simulate RFID reader detection area
@@ -42,12 +39,6 @@ while True:
     for y in range(IMG_HEIGHT):
         for x in range(IMG_WIDTH):
             temp_data[x, y] = f[y * IMG_WIDTH + x]
-
-    # Image processing
-    temp_data = temp_data * DEPTH_SCALE_FACTOR + DEPTH_SCALE_BETA_FACTOR
-    temp_data[temp_data > 255] = 255
-    temp_data[temp_data < 0] = 0
-    temp_data = temp_data.astype('uint8')
 
     temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTOR), interpolation=cv2.INTER_CUBIC)
     temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
