@@ -33,12 +33,13 @@ while True:
     except ValueError:
         continue
 
-    # Drops temperatures that are too low or to high to be human (without fever)
-    band_pass = [x if x > 33 and x < 40 else 0 for x in f]
-
     for y in range(IMG_HEIGHT):
         for x in range(IMG_WIDTH):
-            temp_data[x, y] = band_pass[y * IMG_WIDTH + x]  
+            temp_data[x, y] = f[y * IMG_WIDTH + x]  
+
+    # Drops temperatures that are too low or to high to be human (without fever)
+    temp_data[temp_data < 33] = 0
+    temp_data[temp_data > 40] = 0
 
     temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTOR))
     temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
