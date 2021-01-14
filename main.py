@@ -86,7 +86,7 @@ while True:
     outsideReaderRange = 0
 
     for kp in keypoints:
-        d = sqrt(pow(kp.pt[0] - circleX, 2) + pow(kp.pt[0] - circleY, 2))
+        d = sqrt(pow(kp.pt[0] - circleX, 2) + pow(kp.pt[1] - circleY, 2))
         if d < circleR:
             insideReaderRange += 1
         else:
