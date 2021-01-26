@@ -16,7 +16,7 @@ TEMP_MIN, TEMP_MAX = 6, 20
 SCALE_FACTOR = 10
 
 # set up circle dimesions to simulate RFID reader detection area
-circleR  = (IMG_WIDTH * SCALE_FACTOR) // 3
+circleR  = (IMG_WIDTH * SCALE_FACTOR) // 4
 circleX, circleY = (IMG_WIDTH * SCALE_FACTOR) // 2, (IMG_HEIGHT * SCALE_FACTOR)  // 2
 
 i2c = busio.I2C(board.SCL, board.SDA, frequency=800000)
