@@ -61,16 +61,12 @@ while True:
     # Filter by Area.
     params.filterByArea = True
     params.minArea = 400
-    params.maxArea = 3000
+    params.maxArea = 6000
 
     # Filter by Circularity
     params.filterByCircularity = True
     params.minCircularity = 0.1
-
-    # Filter by Convexity
-    params.filterByConvexity = True
-    params.maxConvexity = 0.6
-
+    
     # Filter by Inertia
     params.filterByInertia = True
     params.minInertiaRatio = 0.01
