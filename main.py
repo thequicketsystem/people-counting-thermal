@@ -50,8 +50,7 @@ while True:
 
     temp_data = np.array(f).reshape((IMG_HEIGHT, IMG_WIDTH))
 
-    temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * 
-                                             , IMG_HEIGHT * SCALE_FACTOR))
+    temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTOR))
     temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
     temp_data = cv2.bilateralFilter(temp_data, 9, 150, 150)
