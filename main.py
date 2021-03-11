@@ -89,6 +89,6 @@ while True:
     # Draw count of blobs inside circle and outside circle, as well as the circle itself
     cv2.putText(temp_data_with_keypoints, f"count: {str(len(keypoints))}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
-    cv2.imshow("People Counting Subsystem (Thermal) Demo", composite)
+    cv2.imshow("People Counting Subsystem (Thermal) Demo", temp_data_with_keypoints)
 
     cv2.waitKey(1)
