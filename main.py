@@ -60,17 +60,9 @@ while True:
 
     # Filter by Area.
     params.filterByArea = True
-    params.minArea = 500
-    params.maxArea = 6000
-
-    # Filter by Circularity
-    params.filterByCircularity = True
-    params.minCircularity = 0.1
+    params.minArea = 1000
+    params.maxArea = 8000
     
-    # Filter by Inertia
-    params.filterByInertia = True
-    params.minInertiaRatio = 0.01
-
     detector = cv2.SimpleBlobDetector_create(params)
 
     keypoints = detector.detect(temp_data)
