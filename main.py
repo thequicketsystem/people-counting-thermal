@@ -60,7 +60,7 @@ while True:
 
     # Filter by Area.
     params.filterByArea = True
-    params.minArea = 400
+    params.minArea = 500
     params.maxArea = 6000
 
     # Filter by Circularity
@@ -70,10 +70,6 @@ while True:
     # Filter by Inertia
     params.filterByInertia = True
     params.minInertiaRatio = 0.01
-    
-    # Filter by Color
-    params.filterByColor = 1
-    params.blobColor = 0
 
     detector = cv2.SimpleBlobDetector_create(params)
 
