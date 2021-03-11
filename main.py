@@ -15,10 +15,6 @@ TEMP_MIN, TEMP_MAX = 6, 20
 
 SCALE_FACTOR = 10
 
-# set up circle dimesions to simulate RFID reader detection area
-circleR  = (IMG_WIDTH * SCALE_FACTOR) // 4
-circleX, circleY = (IMG_WIDTH * SCALE_FACTOR) // 2, (IMG_HEIGHT * SCALE_FACTOR)  // 2
-
 i2c = busio.I2C(board.SCL, board.SDA, frequency=800000)
 mlx = adafruit_mlx90640.MLX90640(i2c)
 mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
@@ -37,7 +33,8 @@ while True:
         for x in range(IMG_WIDTH):
             temp_data[x, y] = f[y * IMG_WIDTH + x]  
 
-    temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTOR))
+    temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * 
+                                             , IMG_HEIGHT * SCALE_FACTOR))
     temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
     temp_data = cv2.bilateralFilter(temp_data, 9, 150, 150)
