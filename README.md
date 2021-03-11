@@ -1,4 +1,4 @@
-# people-counting-
+# people-counting-thermal
 
 ## requirements
 ```
