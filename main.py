@@ -51,17 +51,22 @@ while True:
 
     temp_data = cv2.bitwise_not(temp_data)
 
-    # Blob detection
-    params = cv2.SimpleBlobDetector_Params()
-
     # Change thresholds
     params.minThreshold = 0;
     params.maxThreshold = 255;
 
     # Filter by Area.
     params.filterByArea = True
-    params.minArea = 1000
+    params.minArea = 750
     params.maxArea = 8000
+
+    # Filter by Circularity
+    params.filterByCircularity = True
+    params.minCircularity = 0.1
+    
+    # Filter by Inertia
+    params.filterByInertia = True
+    params.minInertiaRatio = 0.01
     
     detector = cv2.SimpleBlobDetector_create(params)
 
