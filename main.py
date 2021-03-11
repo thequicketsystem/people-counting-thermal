@@ -21,17 +21,34 @@ mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
 
 f = [0] * (IMG_WIDTH * IMG_HEIGHT)
 
+## Blob detection parameters
+params = cv2.SimpleBlobDetector_Params()
+
+# Change thresholds
+params.minThreshold = 0;
+params.maxThreshold = 255;
+
+# Filter by Area.
+params.filterByArea = True
+params.minArea = 750
+params.maxArea = 8000
+
+# Filter by Circularity
+params.filterByCircularity = True
+params.minCircularity = 0.1
+
+# Filter by Inertia
+params.filterByInertia = True
+params.minInertiaRatio = 0.01
+
 while True:
-    temp_data = np.empty([IMG_WIDTH, IMG_HEIGHT])
 
     try:
         mlx.getFrame(f)
     except ValueError:
         continue
 
-    for y in range(IMG_HEIGHT):
-        for x in range(IMG_WIDTH):
-            temp_data[x, y] = f[y * IMG_WIDTH + x]  
+    temp_data = np.array(f).reshape((IMG_HEIGHT, IMG_WIDTH))
 
     temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * 
                                              , IMG_HEIGHT * SCALE_FACTOR))
@@ -48,23 +65,6 @@ while True:
 
     temp_data = cv2.bitwise_not(temp_data)
 
-    # Change thresholds
-    params.minThreshold = 0;
-    params.maxThreshold = 255;
-
-    # Filter by Area.
-    params.filterByArea = True
-    params.minArea = 750
-    params.maxArea = 8000
-
-    # Filter by Circularity
-    params.filterByCircularity = True
-    params.minCircularity = 0.1
-    
-    # Filter by Inertia
-    params.filterByInertia = True
-    params.minInertiaRatio = 0.01
-    
     detector = cv2.SimpleBlobDetector_create(params)
 
     keypoints = detector.detect(temp_data)
