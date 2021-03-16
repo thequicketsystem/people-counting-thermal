@@ -17,7 +17,7 @@ SCALE_FACTOR = 10
 
 i2c = busio.I2C(board.SCL, board.SDA, frequency=800000)
 mlx = adafruit_mlx90640.MLX90640(i2c)
-mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_64_HZ
+mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_8_HZ
 
 f = [0] * (IMG_WIDTH * IMG_HEIGHT)
 
