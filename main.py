@@ -45,16 +45,11 @@ def get_best_of_x(x: int) -> int:
     return max([get_frame_data() for i in range(x)])
 
 def get_frame_data() -> int:
-    #temp_data = np.empty([IMG_WIDTH, IMG_HEIGHT])
 
     try:
         mlx.getFrame(f)
     except ValueError:
         pass
-
-    #for y in range(IMG_HEIGHT):
-    #    for x in range(IMG_WIDTH):
-    #        temp_data[x, y] = f[y * IMG_WIDTH + x]
 
     temp_data = np.array(f).reshape((IMG_HEIGHT, IMG_WIDTH))
 
@@ -76,7 +71,17 @@ def get_frame_data() -> int:
 
     keypoints = detector.detect(temp_data)
 
-    return(len(keypoints))
+    count = len(keypoints)
+
+    # Draw circles around blobs and display count on screen
+    temp_data_with_keypoints = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+    # Draw count of blobs inside circle and outside circle, as well as the circle itself
+    cv2.putText(temp_data_with_keypoints, f"count: {count}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.imshow("People Counting Subsystem (Thermal) Demo", temp_data_with_keypoints)
+    cv2.waitKey(1)
+
+    return(count)
 
 while True:
     print(f"Count:{get_best_of_x(5)}")
