@@ -57,7 +57,7 @@ def get_frame_data() -> int:
     temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
     # drops temps that are too cold
-    _, temp_data = cv2.threshold(temp_data, 80, 255, cv.THRESH_TOZERO)
+    _, temp_data = cv2.threshold(temp_data, 80, 255, cv2.THRESH_TOZERO)
 
     # smoothes image and reduces noise while preserving edges
     temp_data = cv2.bilateralFilter(temp_data, 9, 150, 150)
