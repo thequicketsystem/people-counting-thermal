@@ -42,6 +42,8 @@ params.minCircularity = 0.1
 params.filterByInertia = True
 params.minInertiaRatio = 0.01
 
+detector = cv2.SimpleBlobDetector_create(params)
+
 def get_best_of_x(x: int) -> int:
     return max([get_frame_data() for i in range(x)])
 
@@ -59,7 +61,6 @@ def get_frame_data() -> int:
     
     _, temp_data = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-    detector = cv2.SimpleBlobDetector_create(params)
 
     keypoints = detector.detect(temp_data)
 
