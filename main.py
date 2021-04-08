@@ -47,7 +47,7 @@ params.minInertiaRatio = 0.01
 
 detector = cv2.SimpleBlobDetector_create(params)
 
-blank_frame = np.zeros(IMG_HEIGHT * SCALE_FACTOR, IMG_WIDTH * SCALE_FACTOR)
+blank_frame = np.zeros((IMG_HEIGHT * SCALE_FACTOR, IMG_WIDTH * SCALE_FACTOR))
 
 def get_best_of_x(x: int) -> int:
     return max([get_frame_data() for i in range(x)])
