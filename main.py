@@ -41,6 +41,8 @@ params.minCircularity = 0.1
 params.filterByInertia = True
 params.minInertiaRatio = 0.01
 
+detector = cv2.SimpleBlobDetector_create(params)
+
 def get_best_of_x(x: int) -> int:
     return max([get_frame_data() for i in range(x)])
 
@@ -70,8 +72,6 @@ def get_frame_data() -> int:
     temp_data = cv2.morphologyEx(temp_data, cv2.MORPH_CLOSE, kernel)
 
     temp_data = cv2.bitwise_not(temp_data)
-
-    detector = cv2.SimpleBlobDetector_create(params)
 
     keypoints = detector.detect(temp_data)
 
