@@ -9,6 +9,7 @@ from math import sqrt
 # https://answers.opencv.org/question/210645/detection-of-people-from-above-with-thermal-camera/
 # https://www.learnopencv.com/blob-detection-using-opencv-python-c/
 # https://github.com/thequicketsystem/people-counting-visual/
+# https://learnopencv.com/otsu-thresholding-with-opencv/
 
 IMG_WIDTH, IMG_HEIGHT = 32, 24
 TEMP_MIN, TEMP_MAX = 6, 20
@@ -54,22 +55,9 @@ def get_frame_data() -> int:
     temp_data = np.array(f).reshape((IMG_HEIGHT, IMG_WIDTH))
 
     temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTOR))
-    temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-
-    # drops temps that are too cold
-    _, temp_data = cv2.threshold(temp_data, 80, 255, cv2.THRESH_TOZERO)
-
-    # smoothes image and reduces noise while preserving edges
-    temp_data = cv2.bilateralFilter(temp_data, 9, 150, 150)
-
-    kernel = np.ones((5,5), np.uint8)
-
-    temp_data = cv2.erode(temp_data, kernel, iterations = 1)
-    temp_data = cv2.dilate(temp_data, kernel, iterations = 1)
-
-    temp_data = cv2.morphologyEx(temp_data, cv2.MORPH_CLOSE, kernel)
-
-    temp_data = cv2.bitwise_not(temp_data)
+    temp_data = cv2.GaussianBlur(temp_data, (5, 5), 0)
+    
+    _, temp_data = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
     detector = cv2.SimpleBlobDetector_create(params)
 
