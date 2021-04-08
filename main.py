@@ -78,4 +78,4 @@ def get_frame_data() -> int:
     return(count)
 
 while True:
-    print(f"Count:{get_best_of_x(5)}")
+    print(f"Count:{get_best_of_x(16)}")
