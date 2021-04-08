@@ -10,6 +10,7 @@ from math import sqrt
 # https://www.learnopencv.com/blob-detection-using-opencv-python-c/
 # https://github.com/thequicketsystem/people-counting-visual/
 # https://learnopencv.com/otsu-thresholding-with-opencv/
+# https://docs.opencv.org/3.4/d7/d4d/tutorial_py_thresholding.html
 
 IMG_WIDTH, IMG_HEIGHT = 32, 24
 TEMP_MIN, TEMP_MAX = 6, 20
@@ -57,10 +58,9 @@ def get_frame_data() -> int:
     temp_data = np.array(f).reshape((IMG_HEIGHT, IMG_WIDTH))
 
     temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTOR))
-    temp_data = cv2.GaussianBlur(temp_data, (5, 5), 0)
-    
+    temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+    temp_data = cv2.GaussianBlur(temp_data, (5, 5), 0)    
     _, temp_data = cv2.threshold(temp_data, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-
 
     keypoints = detector.detect(temp_data)
 
