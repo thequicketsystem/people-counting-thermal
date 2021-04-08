@@ -61,6 +61,7 @@ def get_frame_data() -> int:
     temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
     temp_data = cv2.GaussianBlur(temp_data, (5, 5), 0)    
     _, temp_data = cv2.threshold(temp_data, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    temp_data = cv2.bitwise_not(temp_data)
 
     keypoints = detector.detect(temp_data)
 
