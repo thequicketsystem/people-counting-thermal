@@ -59,7 +59,7 @@ def get_frame_data() -> int:
     temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTOR))
     temp_data = cv2.GaussianBlur(temp_data, (5, 5), 0)
     
-    _, temp_data = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    _, temp_data = cv2.threshold(temp_data, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
 
     keypoints = detector.detect(temp_data)
