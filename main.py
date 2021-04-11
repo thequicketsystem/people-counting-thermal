@@ -9,11 +9,20 @@ from math import sqrt
 # https://answers.opencv.org/question/210645/detection-of-people-from-above-with-thermal-camera/
 # https://www.learnopencv.com/blob-detection-using-opencv-python-c/
 # https://github.com/thequicketsystem/people-counting-visual/
+# https://stackoverflow.com/questions/35884409/how-to-extract-x-y-coordinates-from-opencv-cv2-keypoint-object
 
 IMG_WIDTH, IMG_HEIGHT = 32, 24
 TEMP_MIN, TEMP_MAX = 6, 20
 
 SCALE_FACTOR = 10
+
+# yeah i know they aren't quadrants if there's only two but we'll get to that
+QUAD_SEP = (IMG_WIDTH * SCALE_FACTOR) // 2
+
+# no magic numbers
+RESULT_COUNT_INDEX = 0
+LEFT_QUAD_INDEX = 1
+RIGHT_QUAD_INDEX = 2
 
 i2c = busio.I2C(board.SCL, board.SDA, frequency=800000)
 mlx = adafruit_mlx90640.MLX90640(i2c)
@@ -44,9 +53,30 @@ params.minInertiaRatio = 0.01
 detector = cv2.SimpleBlobDetector_create(params)
 
 def get_best_of_x(x: int) -> int:
-    return max([get_frame_data() for i in range(x)])
+    # we don't really need the count from get_frame_data() but we'll keep it for
+    # now.
+    result = [False, False]
 
-def get_frame_data() -> int:
+    for i in range(x):
+        data = get_frame_data()
+        if data[LEFT_QUAD_INDEX]:
+            result[LEFT_QUAD_INDEX - 1] = True
+        
+        if data[RIGHT_QUAD_INDEX]:
+            result[RIGHT_QUAD_INDEX - 1] = True
+
+        # the result isn't going to change again if both are true, so break
+        # if/when that occurs
+        if all(result):
+            break
+
+    return result.count(True)
+
+# TODO: Look up the type hinting for this
+# Should return a list like this: [count, left_quad, right_quad]
+def get_frame_data():
+
+    result = [0, False, False]
 
     try:
         mlx.getFrame(f)
@@ -75,17 +105,29 @@ def get_frame_data() -> int:
 
     keypoints = detector.detect(temp_data)
 
-    count = len(keypoints)
+    result[RESULT_COUNT_INDEX] = len(keypoints)
+
+    # Determine "quadrants" (only two quads for now) of keypoints
+    pts = cv2.KeyPoint_convert(keypoints)
+    for point in pts:
+        x, _ = point.pt
+        if x < QUAD_SEP:
+            result[LEFT_QUAD_INDEX] = True
+        else:
+            result[RIGHT_QUAD_INDEX] = True
 
     # Draw circles around blobs and display count on screen
     temp_data_with_keypoints = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
+    # Draw seperator line
+    cv2.line(temp_data, (QUAD_SEP, 0), (QUAD_SEP, IMG_HEIGHT * SCALE_FACTOR), (0, 255, 255), 2)
+
     # Draw count of blobs inside circle and outside circle, as well as the circle itself
-    cv2.putText(temp_data_with_keypoints, f"count: {count}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.putText(temp_data_with_keypoints, f"count: {result[RESULT_COUNT_INDEX]}\nleft: {result[LEFT_QUAD_INDEX]}\nright:{result[RIGHT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.imshow("People Counting Subsystem (Thermal) Demo", temp_data_with_keypoints)
     cv2.waitKey(1)
 
-    return(count)
+    return(result)
 
 while True:
-    print(f"Count:{get_best_of_x(5)}")
+    print(f"Count:{get_best_of_x(8)}")
