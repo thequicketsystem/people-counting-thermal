@@ -122,11 +122,11 @@ def get_frame_data():
     cv2.putText(temp_data_with_keypoints, f"count: {result[RESULT_COUNT_INDEX]} left: {result[LEFT_QUAD_INDEX]} right:{result[RIGHT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.putText(temp_data_with_keypoints, f"left: {result[LEFT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.putText(temp_data_with_keypoints, f"right: {result[RIGHT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-    
+
     cv2.imshow("People Counting Subsystem (Thermal) Demo", temp_data_with_keypoints)
     cv2.waitKey(1)
 
     return(result)
 
 while True:
-    print(f"Count:{get_best_of_x(16)}")
+    print(f"Count:{get_best_of_x(32)}")
