@@ -119,7 +119,10 @@ def get_frame_data():
     temp_data_with_keypoints = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
     # Draw count of blobs inside circle and outside circle, as well as the circle itself
-    cv2.putText(temp_data_with_keypoints, f"count: {result[RESULT_COUNT_INDEX]}\nleft: {result[LEFT_QUAD_INDEX]}\nright:{result[RIGHT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.putText(temp_data_with_keypoints, f"count: {result[RESULT_COUNT_INDEX]} left: {result[LEFT_QUAD_INDEX]} right:{result[RIGHT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.putText(temp_data_with_keypoints, f"left: {result[LEFT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.putText(temp_data_with_keypoints, f"right: {result[RIGHT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    
     cv2.imshow("People Counting Subsystem (Thermal) Demo", temp_data_with_keypoints)
     cv2.waitKey(1)
 
