@@ -118,9 +118,6 @@ def get_frame_data():
     # Draw circles around blobs and display count on screen
     temp_data_with_keypoints = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
-    # Draw seperator line
-    cv2.line(temp_data, (QUAD_SEP, 0), (QUAD_SEP, IMG_HEIGHT * SCALE_FACTOR), (0, 255, 255), 2)
-
     # Draw count of blobs inside circle and outside circle, as well as the circle itself
     cv2.putText(temp_data_with_keypoints, f"count: {result[RESULT_COUNT_INDEX]}\nleft: {result[LEFT_QUAD_INDEX]}\nright:{result[RIGHT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.imshow("People Counting Subsystem (Thermal) Demo", temp_data_with_keypoints)
