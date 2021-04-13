@@ -110,7 +110,7 @@ def get_frame_data():
     # Determine "quadrants" (only two quads for now) of keypoints
     pts = cv2.KeyPoint_convert(keypoints)
     for point in pts:
-        if point[x] < QUAD_SEP:
+        if point[0] < QUAD_SEP:
             result[LEFT_QUAD_INDEX] = True
         else:
             result[RIGHT_QUAD_INDEX] = True
