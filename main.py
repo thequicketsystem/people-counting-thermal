@@ -4,7 +4,7 @@ import adafruit_mlx90640
 import numpy as np
 import cv2
 from math import sqrt
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 
 # Sources:
 # https://answers.opencv.org/question/210645/detection-of-people-from-above-with-thermal-camera/
@@ -109,9 +109,9 @@ def get_frame_data():
     
     keypoints = []
 
-    # process the two halves concurrently
+    # process the two halves in seperate threads
     # this will need to be cleaned up a lot later. no magic numbers!
-    with ProcessPoolExecutor() as ex:
+    with ThreadPoolExecutor() as ex:
         ld_future = ex.submit(detectors[0].detect, temp_data_left)
         rd_future = ex.submit(detectors[1].detect, temp_data_right)
 
