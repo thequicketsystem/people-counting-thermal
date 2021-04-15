@@ -25,6 +25,9 @@ RESULT_COUNT_INDEX = 0
 LEFT_QUAD_INDEX = 1
 RIGHT_QUAD_INDEX = 2
 
+# We use "left" and "right" relative to the orientation of the virutal gate. 
+# on-screen, the the seperator will appear to be along the x axis ("top" and "bottom")
+
 i2c = busio.I2C(board.SCL, board.SDA, frequency=800000)
 mlx = adafruit_mlx90640.MLX90640(i2c)
 mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_16_HZ
@@ -104,8 +107,8 @@ def get_frame_data():
 
     temp_data = cv2.bitwise_not(temp_data)
 
-    # split data into a left half and a right half
-    temp_data_left, temp_data_right = temp_data[:,:(IMG_WIDTH * SCALE_FACTOR)], temp_data[:,(IMG_WIDTH * SCALE_FACTOR):]
+    # split data into a left half and a right half (actually top and bottom halves)
+    temp_data_left, temp_data_right = temp_data[:(IMG_HEIGHT * SCALE_FACTOR),:], temp_data[(IMG_HEIGHT * SCALE_FACTOR):,:]
     
     keypoints = []
 
@@ -136,6 +139,7 @@ def get_frame_data():
     cv2.putText(temp_data_with_keypoints, f"count: {result[RESULT_COUNT_INDEX]} left: {result[LEFT_QUAD_INDEX]} right:{result[RIGHT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.putText(temp_data_with_keypoints, f"left: {result[LEFT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.putText(temp_data_with_keypoints, f"right: {result[RIGHT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.line(temp_data_with_keypoints, (0, IMG_HEIGHT // 2), (IMG_WIDTH, IMG_HEIGHT // 2), (0, 255, 255), 2)
 
     cv2.imshow("People Counting Subsystem (Thermal) Demo", temp_data_with_keypoints)
     cv2.waitKey(1)
