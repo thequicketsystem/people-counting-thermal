@@ -17,6 +17,8 @@ TEMP_MIN, TEMP_MAX = 6, 20
 
 SCALE_FACTOR = 10
 
+SCALED_WIDTH, SCALED_HEIGHT = IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTOR
+
 # yeah i know they aren't quadrants if there's only two but we'll get to that
 QUAD_SEP = (IMG_WIDTH * SCALE_FACTOR) // 2
 
@@ -89,7 +91,7 @@ def get_frame_data():
 
     temp_data = np.array(f).reshape((IMG_HEIGHT, IMG_WIDTH))
 
-    temp_data = cv2.resize(temp_data, dsize=(IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTOR))
+    temp_data = cv2.resize(temp_data, dsize=(SCALED_WIDTH, SCALED_HEIGHT))
     temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
     # drop colder temp data
@@ -108,7 +110,7 @@ def get_frame_data():
     temp_data = cv2.bitwise_not(temp_data)
 
     # split data into a left half and a right half (actually top and bottom halves)
-    temp_data_left, temp_data_right = temp_data[:(IMG_HEIGHT * SCALE_FACTOR),:], temp_data[(IMG_HEIGHT * SCALE_FACTOR):,:]
+    temp_data_left, temp_data_right = temp_data[:SCALED_HEIGHT,:], temp_data[SCALED_WIDTH:,:]
     
     keypoints = []
 
@@ -136,10 +138,10 @@ def get_frame_data():
     temp_data_with_keypoints = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
     # Draw count of blobs inside circle and outside circle, as well as the circle itself
-    cv2.putText(temp_data_with_keypoints, f"count: {result[RESULT_COUNT_INDEX]} left: {result[LEFT_QUAD_INDEX]} right:{result[RIGHT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-    cv2.putText(temp_data_with_keypoints, f"left: {result[LEFT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-    cv2.putText(temp_data_with_keypoints, f"right: {result[RIGHT_QUAD_INDEX]}", (10, (IMG_HEIGHT * SCALE_FACTOR) - 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-    cv2.line(temp_data_with_keypoints, (0, IMG_HEIGHT // 2), (IMG_WIDTH, IMG_HEIGHT // 2), (0, 255, 255), 2)
+    cv2.putText(temp_data_with_keypoints, f"count: {result[RESULT_COUNT_INDEX]} left: {result[LEFT_QUAD_INDEX]} right:{result[RIGHT_QUAD_INDEX]}", (10, SCALED_HEIGHT - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.putText(temp_data_with_keypoints, f"left: {result[LEFT_QUAD_INDEX]}", (10, SCALED_HEIGHT - 100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.putText(temp_data_with_keypoints, f"right: {result[RIGHT_QUAD_INDEX]}", (10, SCALED_HEIGHT - 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.line(temp_data_with_keypoints, (0, SCALED_HEIGHT // 2), (SCALED_WIDTH, SCALED_HEIGHT // 2), (0, 255, 255), 2)
 
     cv2.imshow("People Counting Subsystem (Thermal) Demo", temp_data_with_keypoints)
     cv2.waitKey(1)
