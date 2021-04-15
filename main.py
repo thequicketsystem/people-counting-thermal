@@ -143,4 +143,4 @@ def get_frame_data():
     return(result)
 
 while True:
-    print(f"Count:{get_best_of_x(32)}")
+    print(f"Count:{get_best_of_x(16)}")
