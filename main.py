@@ -61,8 +61,6 @@ params.minInertiaRatio = 0.01
 
 detectors = [cv2.SimpleBlobDetector_create(params) for i in range(2)]
 
-blank_frame = np.zeros((SCALED_HEIGHT, SCALED_WIDTH))
-
 def get_best_of_x(x: int) -> int:
     ping_count = [0, 0]
     result = [False, False]
@@ -91,62 +89,58 @@ def get_frame_data() -> (bool, bool):
     
     left_data, right_data = False, False
 
-    frame = blank_frame
+    temp_data = np.array(f).reshape((IMG_HEIGHT, IMG_WIDTH))
 
-    if max(f) > MIN_TEMP:
+    temp_data = cv2.resize(temp_data, dsize=(SCALED_WIDTH, SCALED_HEIGHT))
+    temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
-        temp_data = np.array(f).reshape((IMG_HEIGHT, IMG_WIDTH))
+    # drop colder temp data
+    temp_data[temp_data < 80] = 0
 
-        temp_data = cv2.resize(temp_data, dsize=(SCALED_WIDTH, SCALED_HEIGHT))
-        temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+    # smoothes image and reduces noise while preserving edges
+    temp_data = cv2.bilateralFilter(temp_data, 9, 150, 150)
 
-        # drop colder temp data
-        temp_data[temp_data < 80] = 0
+    kernel = np.ones((5,5), np.uint8)
 
-        # smoothes image and reduces noise while preserving edges
-        temp_data = cv2.bilateralFilter(temp_data, 9, 150, 150)
+    temp_data = cv2.erode(temp_data, kernel, iterations = 1)
+    temp_data = cv2.dilate(temp_data, kernel, iterations = 1)
 
-        kernel = np.ones((5,5), np.uint8)
+    temp_data = cv2.morphologyEx(temp_data, cv2.MORPH_CLOSE, kernel)
 
-        temp_data = cv2.erode(temp_data, kernel, iterations = 1)
-        temp_data = cv2.dilate(temp_data, kernel, iterations = 1)
+    temp_data = cv2.bitwise_not(temp_data)
 
-        temp_data = cv2.morphologyEx(temp_data, cv2.MORPH_CLOSE, kernel)
+    # split data into a left half and a right half (actually top and bottom halves)
+    temp_data_left, temp_data_right = temp_data[:SCALED_HEIGHT,:], temp_data[SCALED_WIDTH:,:]
+    
+    keypoints = []
 
-        temp_data = cv2.bitwise_not(temp_data)
+    # process the two halves in seperate threads
+    # this will need to be cleaned up a lot later. no magic numbers!
+    with ThreadPoolExecutor() as ex:
+        ld_future = ex.submit(detectors[0].detect, temp_data_left)
+        rd_future = ex.submit(detectors[1].detect, temp_data_right)
 
-        # split data into a left half and a right half (actually top and bottom halves)
-        temp_data_left, temp_data_right = temp_data[:SCALED_HEIGHT,:], temp_data[SCALED_WIDTH:,:]
-        
-        keypoints = []
+        # join the results together
+        keypoints.extend(ld_future.result())
+        keypoints.extend(rd_future.result())
 
-        # process the two halves in seperate threads
-        # this will need to be cleaned up a lot later. no magic numbers!
-        with ThreadPoolExecutor() as ex:
-            ld_future = ex.submit(detectors[0].detect, temp_data_left)
-            rd_future = ex.submit(detectors[1].detect, temp_data_right)
+    # Determine "quadrants" (only two quads for now) of keypoints
+    pts = cv2.KeyPoint_convert(keypoints)
+    for point in pts:
+        if point[0] < QUAD_SEP:
+            left_data = True
+        else:
+            right_data = True
 
-            # join the results together
-            keypoints.extend(ld_future.result())
-            keypoints.extend(rd_future.result())
-
-        # Determine "quadrants" (only two quads for now) of keypoints
-        pts = cv2.KeyPoint_convert(keypoints)
-        for point in pts:
-            if point[0] < QUAD_SEP:
-                left_data = True
-            else:
-                right_data = True
-
-        # Draw circles around blobs and display count on screen
-        frame = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    # Draw circles around blobs and display count on screen
+    output_frame = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
     # Draw count of blobs inside circle and outside circle, as well as the circle itself
-    cv2.putText(frame, f"right: {right_data}", (10, SCALED_HEIGHT - 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-    cv2.putText(frame, f"left: {left_data}", (10, SCALED_HEIGHT - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-    cv2.line(frame, (0, SCALED_HEIGHT // 2), (SCALED_WIDTH, SCALED_HEIGHT // 2), (0, 255, 255), 2)
+    cv2.putText(output_frame, f"right: {right_data}", (10, SCALED_HEIGHT - 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.putText(output_frame, f"left: {left_data}", (10, SCALED_HEIGHT - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.line(output_frame, (0, SCALED_HEIGHT // 2), (SCALED_WIDTH, SCALED_HEIGHT // 2), (0, 255, 255), 2)
 
-    cv2.imshow("People Counting Subsystem (Thermal) Demo", frame)
+    cv2.imshow("People Counting Subsystem (Thermal) Demo", output_frame)
     cv2.waitKey(1)
 
     return (left_data, right_data)
