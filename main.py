@@ -25,12 +25,13 @@ MIN_TEMP = 30
 QUAD_SEP = (IMG_WIDTH * SCALE_FACTOR) // 2
 
 # no magic numbers
-RESULT_COUNT_INDEX = 0
-LEFT_QUAD_INDEX = 1
-RIGHT_QUAD_INDEX = 2
+LEFT_QUAD_INDEX = 0
+RIGHT_QUAD_INDEX = 1
 
 # We use "left" and "right" relative to the orientation of the virutal gate. 
 # on-screen, the the seperator will appear to be along the x axis ("top" and "bottom")
+
+CONFIDENCE_THRESHOLD = 1
 
 i2c = busio.I2C(board.SCL, board.SDA, frequency=800000)
 mlx = adafruit_mlx90640.MLX90640(i2c)
@@ -63,34 +64,32 @@ detectors = [cv2.SimpleBlobDetector_create(params) for i in range(2)]
 blank_frame = np.zeros((SCALED_HEIGHT, SCALED_WIDTH))
 
 def get_best_of_x(x: int) -> int:
-    # we don't really need the count from get_frame_data() but we'll keep it for
-    # now.
+    ping_count = [0, 0]
     result = [False, False]
 
     for i in range(x):
-        data = get_frame_data()
-        if data[LEFT_QUAD_INDEX]:
-            result[LEFT_QUAD_INDEX - 1] = True
+        left_data, right_data = get_frame_data()
+        if left_data:
+            ping_count[LEFT_QUAD_INDEX] += 1
         
-        if data[RIGHT_QUAD_INDEX]:
-            result[RIGHT_QUAD_INDEX - 1] = True
+        if right_data:
+            ping_count[RIGHT_QUAD_INDEX - 1] += 1
 
-        # the result isn't going to change again if both are true, so break
-        # if/when that occurs
-        if all(result):
-            break
+    for i in range(2):
+        if ping_count[i] > CONFIDENCE_THRESHOLD:
+            result[i] = True
 
     return result.count(True)
 
 # TODO: Look up the type hinting for this
 # Should return a list like this: [count, left_quad, right_quad]
-def get_frame_data():
+def get_frame_data() -> (bool, bool):
     try:
         mlx.getFrame(f)
     except ValueError:
         pass
     
-    result = [0, False, False]
+    left_data, right_data = False, False
 
     frame = blank_frame
 
@@ -131,29 +130,26 @@ def get_frame_data():
             keypoints.extend(ld_future.result())
             keypoints.extend(rd_future.result())
 
-        result[RESULT_COUNT_INDEX] = len(keypoints)
-
         # Determine "quadrants" (only two quads for now) of keypoints
         pts = cv2.KeyPoint_convert(keypoints)
         for point in pts:
             if point[0] < QUAD_SEP:
-                result[LEFT_QUAD_INDEX] = True
+                left_data = True
             else:
-                result[RIGHT_QUAD_INDEX] = True
+                right_data = True
 
         # Draw circles around blobs and display count on screen
         frame = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
     # Draw count of blobs inside circle and outside circle, as well as the circle itself
-    cv2.putText(frame, f"right: {result[RIGHT_QUAD_INDEX]}", (10, SCALED_HEIGHT - 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-    cv2.putText(frame, f"left: {result[LEFT_QUAD_INDEX]}", (10, SCALED_HEIGHT - 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-    cv2.putText(frame, f"count: {result[RESULT_COUNT_INDEX]}", (10, SCALED_HEIGHT - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.putText(frame, f"right: {right_data}", (10, SCALED_HEIGHT - 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.putText(frame, f"left: {left_data}", (10, SCALED_HEIGHT - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.line(frame, (0, SCALED_HEIGHT // 2), (SCALED_WIDTH, SCALED_HEIGHT // 2), (0, 255, 255), 2)
 
     cv2.imshow("People Counting Subsystem (Thermal) Demo", frame)
     cv2.waitKey(1)
 
-    return(result)
+    return (left_data, right_data)
 
 while True:
     print(f"Count:{get_best_of_x(16)}")
