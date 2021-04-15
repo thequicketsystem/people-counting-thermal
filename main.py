@@ -51,7 +51,7 @@ params.minCircularity = 0.1
 params.filterByInertia = True
 params.minInertiaRatio = 0.01
 
-detector = cv2.SimpleBlobDetector_create(params)
+detectors = [cv2.SimpleBlobDetector_create(params) for i in range(2)]
 
 def get_best_of_x(x: int) -> int:
     # we don't really need the count from get_frame_data() but we'll keep it for
@@ -110,9 +110,10 @@ def get_frame_data():
     keypoints = []
 
     # process the two halves concurrently
+    # this will need to be cleaned up a lot later. no magic numbers!
     with ProcessPoolExecutor() as ex:
-        ld_future = ex.submit(detector.detect, temp_data_left)
-        rd_future = ex.submit(detector.detect, temp_data_right)
+        ld_future = ex.submit(detectors[0].detect, temp_data_left)
+        rd_future = ex.submit(detectors[1].detect, temp_data_right)
 
         # join the results together
         keypoints.extend(ld_future.result())
