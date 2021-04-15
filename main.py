@@ -138,7 +138,7 @@ def get_frame_data():
     temp_data_with_keypoints = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
     # Draw count of blobs inside circle and outside circle, as well as the circle itself
-    cv2.putText(temp_data_with_keypoints, f"count: {result[RESULT_COUNT_INDEX]} left: {result[LEFT_QUAD_INDEX]} right:{result[RIGHT_QUAD_INDEX]}", (10, SCALED_HEIGHT - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.putText(temp_data_with_keypoints, f"count: {result[RESULT_COUNT_INDEX]}", (10, SCALED_HEIGHT - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.putText(temp_data_with_keypoints, f"left: {result[LEFT_QUAD_INDEX]}", (10, SCALED_HEIGHT - 100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.putText(temp_data_with_keypoints, f"right: {result[RIGHT_QUAD_INDEX]}", (10, SCALED_HEIGHT - 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     cv2.line(temp_data_with_keypoints, (0, SCALED_HEIGHT // 2), (SCALED_WIDTH, SCALED_HEIGHT // 2), (0, 255, 255), 2)
