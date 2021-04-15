@@ -71,7 +71,7 @@ def get_best_of_x(x: int) -> int:
             ping_count[LEFT_QUAD_INDEX] += 1
         
         if right_data:
-            ping_count[RIGHT_QUAD_INDEX - 1] += 1
+            ping_count[RIGHT_QUAD_INDEX] += 1
 
     for i in range(2):
         if ping_count[i] > CONFIDENCE_THRESHOLD:
