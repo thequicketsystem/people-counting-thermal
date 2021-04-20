@@ -31,7 +31,10 @@ RIGHT_QUAD_INDEX = 1
 # We use "left" and "right" relative to the orientation of the virutal gate. 
 # on-screen, the the seperator will appear to be along the x axis ("top" and "bottom")
 
-CONFIDENCE_THRESHOLD = 1
+#CONFIDENCE_THRESHOLD = 1
+
+POLLING_FRAMES_LENGTH = 8
+EXTENSION_LENGTH = 12
 
 i2c = busio.I2C(board.SCL, board.SDA, frequency=800000)
 mlx = adafruit_mlx90640.MLX90640(i2c)
@@ -61,89 +64,103 @@ params.minInertiaRatio = 0.01
 
 detectors = [cv2.SimpleBlobDetector_create(params) for i in range(2)]
 
-def get_best_of_x(x: int) -> int:
-    ping_count = [0, 0]
-    result = [False, False]
+# May need to bring back the CONFIDENCE_THRESHOLD stuff if
+# this soln throws too many flase positives
+#
+# def get_best_of_x(x: int) -> int:
+#     ping_count = [0, 0]
+#     result = [False, False]
 
-    for i in range(x):
-        left_data, right_data = get_frame_data()
-        if left_data:
-            ping_count[LEFT_QUAD_INDEX] += 1
+#     for i in range(x):
+#         left_data, right_data = get_frame_data()
+#         if left_data:
+#             ping_count[LEFT_QUAD_INDEX] += 1
         
-        if right_data:
-            ping_count[RIGHT_QUAD_INDEX] += 1
+#         if right_data:
+#             ping_count[RIGHT_QUAD_INDEX] += 1
 
-    for i in range(2):
-        if ping_count[i] > CONFIDENCE_THRESHOLD:
-            result[i] = True
+#     for i in range(2):
+#         if ping_count[i] > CONFIDENCE_THRESHOLD:
+#             result[i] = True
 
-    return result.count(True)
+#     return result.count(True)
 
-# TODO: Look up the type hinting for this
-# Should return a list like this: [count, left_quad, right_quad]
-def get_frame_data() -> (bool, bool):
-    try:
-        mlx.getFrame(f)
-    except ValueError:
-        pass
-    
+# TODO: Major cleanup/un-spaghettification needed if this does actually work
+def get_frame_data(start_frames: int) -> (bool, bool):
+
+    frames = start_frames
+    is_ext = False
+
     left_data, right_data = False, False
 
-    temp_data = np.array(f).reshape((IMG_HEIGHT, IMG_WIDTH))
+    while frames > 0 and not (left_data and right_data): 
+        try:
+            mlx.getFrame(f)
+        except ValueError:
+            pass
+        
+        temp_data = np.array(f).reshape((IMG_HEIGHT, IMG_WIDTH))
 
-    temp_data = cv2.resize(temp_data, dsize=(SCALED_WIDTH, SCALED_HEIGHT))
-    temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+        temp_data = cv2.resize(temp_data, dsize=(SCALED_WIDTH, SCALED_HEIGHT))
+        temp_data = cv2.normalize(temp_data, temp_data, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
-    # drop colder temp data
-    temp_data[temp_data < 80] = 0
+        # drop colder temp data
+        temp_data[temp_data < 80] = 0
 
-    # smoothes image and reduces noise while preserving edges
-    temp_data = cv2.bilateralFilter(temp_data, 9, 150, 150)
+        # smoothes image and reduces noise while preserving edges
+        temp_data = cv2.bilateralFilter(temp_data, 9, 150, 150)
 
-    kernel = np.ones((5,5), np.uint8)
+        kernel = np.ones((5,5), np.uint8)
 
-    temp_data = cv2.erode(temp_data, kernel, iterations = 1)
-    temp_data = cv2.dilate(temp_data, kernel, iterations = 1)
+        temp_data = cv2.erode(temp_data, kernel, iterations = 1)
+        temp_data = cv2.dilate(temp_data, kernel, iterations = 1)
 
-    temp_data = cv2.morphologyEx(temp_data, cv2.MORPH_CLOSE, kernel)
+        temp_data = cv2.morphologyEx(temp_data, cv2.MORPH_CLOSE, kernel)
 
-    temp_data = cv2.bitwise_not(temp_data)
+        temp_data = cv2.bitwise_not(temp_data)
 
-    # split data into a left half and a right half (actually top and bottom halves)
-    temp_data_left, temp_data_right = temp_data[:SCALED_HEIGHT,:], temp_data[SCALED_WIDTH:,:]
-    
-    keypoints = []
+        # split data into a left half and a right half (actually top and bottom halves)
+        temp_data_left, temp_data_right = temp_data[:SCALED_HEIGHT,:], temp_data[SCALED_WIDTH:,:]
+        
+        keypoints = []
 
-    # process the two halves in seperate threads
-    # this will need to be cleaned up a lot later. no magic numbers!
-    with ThreadPoolExecutor() as ex:
-        ld_future = ex.submit(detectors[0].detect, temp_data_left)
-        rd_future = ex.submit(detectors[1].detect, temp_data_right)
+        # process the two halves in seperate threads
+        # this will need to be cleaned up a lot later. no magic numbers!
+        with ThreadPoolExecutor() as ex:
+            ld_future = ex.submit(detectors[0].detect, temp_data_left)
+            rd_future = ex.submit(detectors[1].detect, temp_data_right)
 
-        # join the results together
-        keypoints.extend(ld_future.result())
-        keypoints.extend(rd_future.result())
+            # join the results together
+            keypoints.extend(ld_future.result())
+            keypoints.extend(rd_future.result())
 
-    # Determine "quadrants" (only two quads for now) of keypoints
-    pts = cv2.KeyPoint_convert(keypoints)
-    for point in pts:
-        if point[0] < QUAD_SEP:
-            left_data = True
-        else:
-            right_data = True
 
-    # Draw circles around blobs and display count on screen
-    output_frame = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        if len(keypoints) == 1 and not is_ext:
+            frames += EXTENSION_LENGTH
+            is_ext = True
 
-    # Draw count of blobs inside circle and outside circle, as well as the circle itself
-    cv2.putText(output_frame, f"right: {right_data}", (10, SCALED_HEIGHT - 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-    cv2.putText(output_frame, f"left: {left_data}", (10, SCALED_HEIGHT - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-    cv2.line(output_frame, (0, SCALED_HEIGHT // 2), (SCALED_WIDTH, SCALED_HEIGHT // 2), (0, 255, 255), 2)
+        # Determine "quadrants" (only two quads for now) of keypoints
+        pts = cv2.KeyPoint_convert(keypoints)
+        for point in pts:
+            if point[0] < QUAD_SEP:
+                left_data = True
+            else:
+                right_data = True
 
-    cv2.imshow("People Counting Subsystem (Thermal) Demo", output_frame)
-    cv2.waitKey(1)
+        # Draw circles around blobs and display count on screen
+        output_frame = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
-    return (left_data, right_data)
+        # Draw count of blobs inside circle and outside circle, as well as the circle itself
+        cv2.putText(output_frame, f"right: {right_data}", (10, SCALED_HEIGHT - 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        cv2.putText(output_frame, f"left: {left_data}", (10, SCALED_HEIGHT - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        cv2.line(output_frame, (0, SCALED_HEIGHT // 2), (SCALED_WIDTH, SCALED_HEIGHT // 2), (0, 255, 255), 2)
+
+        cv2.imshow("People Counting Subsystem (Thermal) Demo", output_frame)
+        cv2.waitKey(1)
+
+        frames -= 1
+
+    return [left_data, right_data].count(True)
 
 while True:
-    print(f"Count:{get_best_of_x(16)}")
+    print(f"Count:{get_frame_data(16)}")
