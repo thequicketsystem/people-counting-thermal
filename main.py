@@ -93,7 +93,7 @@ def get_frame_data(start_frames: int) -> (bool, bool):
 
     left_data, right_data = False, False
 
-    while frames > 0 and not is_ext and not (left_data and right_data): 
+    while frames > 0 and not (left_data and right_data): 
         try:
             mlx.getFrame(f)
         except ValueError:
