@@ -163,4 +163,4 @@ def get_frame_data(start_frames: int) -> (bool, bool):
     return [left_data, right_data].count(True)
 
 while True:
-    print(f"Count:{get_best_of_x(16)}")
+    print(f"Count:{get_frame_data(16)}")
