@@ -34,6 +34,8 @@ RIGHT_QUAD_INDEX = 1
 POLLING_FRAMES_LENGTH = 8
 EXTENSION_LENGTH = 12
 
+CONFIDENCE_THRESHOLD = 1
+
 i2c = busio.I2C(board.SCL, board.SDA, frequency=800000)
 mlx = adafruit_mlx90640.MLX90640(i2c)
 mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_16_HZ
@@ -63,14 +65,14 @@ params.minInertiaRatio = 0.01
 detectors = [cv2.SimpleBlobDetector_create(params) for i in range(2)]
 
 # TODO: Major cleanup/un-spaghettification needed if this does actually work
-def get_frame_data(start_frames: int) -> (bool, bool):
+def get_frame_data(start_frames: int) -> int:
 
     frames = start_frames
     is_ext = False
 
-    left_data, right_data = False, False
+    left_data, right_data = 0, 0
 
-    while frames > 0 and not (left_data and right_data): 
+    while frames > 0 and not (left_data > CONFIDENCE_THRESHOLD and right_data > CONFIDENCE_THRESHOLD): 
         try:
             mlx.getFrame(f)
         except ValueError:
@@ -120,9 +122,9 @@ def get_frame_data(start_frames: int) -> (bool, bool):
         pts = cv2.KeyPoint_convert(keypoints)
         for point in pts:
             if point[0] < QUAD_SEP:
-                left_data = True
+                left_data += 1
             else:
-                right_data = True
+                right_data += 1
 
         # Draw circles around blobs and display count on screen
         output_frame = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
@@ -137,7 +139,7 @@ def get_frame_data(start_frames: int) -> (bool, bool):
 
         frames -= 1
 
-    return [left_data, right_data].count(True)
+    return len([x for x in [left_data, right_data] if x > CONFIDENCE_THRESHOLD])
 
 while True:
     print(f"Count:{get_frame_data(16)}")
