@@ -21,7 +21,7 @@ SCALED_WIDTH, SCALED_HEIGHT = IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTO
 
 MIN_TEMP = 30
 
-# yeah i know they aren't quadrants if there's only two but we'll get to that
+# yeah i know they aren't quadrants if there's only two but we'll get to that. . . maybe
 QUAD_SEP = (IMG_WIDTH * SCALE_FACTOR) // 2
 
 # no magic numbers
@@ -30,8 +30,6 @@ RIGHT_QUAD_INDEX = 1
 
 # We use "left" and "right" relative to the orientation of the virutal gate. 
 # on-screen, the the seperator will appear to be along the x axis ("top" and "bottom")
-
-#CONFIDENCE_THRESHOLD = 1
 
 POLLING_FRAMES_LENGTH = 8
 EXTENSION_LENGTH = 12
@@ -63,27 +61,6 @@ params.filterByInertia = True
 params.minInertiaRatio = 0.01
 
 detectors = [cv2.SimpleBlobDetector_create(params) for i in range(2)]
-
-# May need to bring back the CONFIDENCE_THRESHOLD stuff if
-# this soln throws too many flase positives
-#
-# def get_best_of_x(x: int) -> int:
-#     ping_count = [0, 0]
-#     result = [False, False]
-
-#     for i in range(x):
-#         left_data, right_data = get_frame_data()
-#         if left_data:
-#             ping_count[LEFT_QUAD_INDEX] += 1
-        
-#         if right_data:
-#             ping_count[RIGHT_QUAD_INDEX] += 1
-
-#     for i in range(2):
-#         if ping_count[i] > CONFIDENCE_THRESHOLD:
-#             result[i] = True
-
-#     return result.count(True)
 
 # TODO: Major cleanup/un-spaghettification needed if this does actually work
 def get_frame_data(start_frames: int) -> (bool, bool):
