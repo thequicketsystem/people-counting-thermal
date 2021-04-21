@@ -21,20 +21,12 @@ SCALED_WIDTH, SCALED_HEIGHT = IMG_WIDTH * SCALE_FACTOR, IMG_HEIGHT * SCALE_FACTO
 
 MIN_TEMP = 30
 
-# yeah i know they aren't quadrants if there's only two but we'll get to that. . . maybe
-QUAD_SEP = (IMG_WIDTH * SCALE_FACTOR) // 2
+SEP = (IMG_WIDTH * SCALE_FACTOR) // 2
 
-# no magic numbers
-LEFT_QUAD_INDEX = 0
-RIGHT_QUAD_INDEX = 1
+POLLING_FRAMES_LENGTH = 4
+EXTENSION_LENGTH = 8
 
-# We use "left" and "right" relative to the orientation of the virutal gate. 
-# on-screen, the the seperator will appear to be along the x axis ("top" and "bottom")
-
-POLLING_FRAMES_LENGTH = 8
-EXTENSION_LENGTH = 12
-
-CONFIDENCE_THRESHOLD = 1
+CONFIDENCE_THRESHOLD = 0
 
 i2c = busio.I2C(board.SCL, board.SDA, frequency=800000)
 mlx = adafruit_mlx90640.MLX90640(i2c)
@@ -65,14 +57,14 @@ params.minInertiaRatio = 0.01
 detectors = [cv2.SimpleBlobDetector_create(params) for i in range(2)]
 
 # TODO: Major cleanup/un-spaghettification needed if this does actually work
-def get_frame_data(start_frames: int) -> int:
+def get_frame_data() -> int:
 
-    frames = start_frames
+    frames = POLLING_FRAMES_LENGTH
     is_ext = False
 
-    left_data, right_data = 0, 0
+    top_data, bottom_data = 0, 0
 
-    while frames > 0 and not (left_data > CONFIDENCE_THRESHOLD and right_data > CONFIDENCE_THRESHOLD): 
+    while frames > 0 and not (bottom_data > CONFIDENCE_THRESHOLD and top_data > CONFIDENCE_THRESHOLD): 
         try:
             mlx.getFrame(f)
         except ValueError:
@@ -98,40 +90,38 @@ def get_frame_data(start_frames: int) -> int:
 
         temp_data = cv2.bitwise_not(temp_data)
 
-        # split data into a left half and a right half (actually top and bottom halves)
-        temp_data_left, temp_data_right = temp_data[:SCALED_HEIGHT,:], temp_data[SCALED_WIDTH:,:]
+        temp_data_top, temp_data_bottom = temp_data[:,:SCALED_HEIGHT], temp_data[:,SCALED_HEIGHT:]
         
         keypoints = []
 
         # process the two halves in seperate threads
         # this will need to be cleaned up a lot later. no magic numbers!
         with ThreadPoolExecutor() as ex:
-            ld_future = ex.submit(detectors[0].detect, temp_data_left)
-            rd_future = ex.submit(detectors[1].detect, temp_data_right)
+            td_future = ex.submit(detectors[0].detect, temp_data_top)
+            bd_future = ex.submit(detectors[1].detect, temp_data_bottom)
 
             # join the results together
-            keypoints.extend(ld_future.result())
-            keypoints.extend(rd_future.result())
+            keypoints.extend(td_future.result())
+            keypoints.extend(bd_future.result())
 
 
         if len(keypoints) == 1 and not is_ext:
             frames += EXTENSION_LENGTH
             is_ext = True
 
-        # Determine "quadrants" (only two quads for now) of keypoints
         pts = cv2.KeyPoint_convert(keypoints)
         for point in pts:
-            if point[0] < QUAD_SEP:
-                left_data += 1
+            if point[1] < SEP:
+                top_data += 1
             else:
-                right_data += 1
+                bottom_data += 1
 
         # Draw circles around blobs and display count on screen
         output_frame = cv2.drawKeypoints(temp_data, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
         # Draw count of blobs inside circle and outside circle, as well as the circle itself
-        cv2.putText(output_frame, f"right: {right_data}", (10, SCALED_HEIGHT - 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-        cv2.putText(output_frame, f"left: {left_data}", (10, SCALED_HEIGHT - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        cv2.putText(output_frame, f"top: {top_data}", (10, SCALED_HEIGHT - 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        cv2.putText(output_frame, f"bottom: {bottom_data}", (10, SCALED_HEIGHT - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
         cv2.line(output_frame, (0, SCALED_HEIGHT // 2), (SCALED_WIDTH, SCALED_HEIGHT // 2), (0, 255, 255), 2)
 
         cv2.imshow("People Counting Subsystem (Thermal) Demo", output_frame)
@@ -139,7 +129,8 @@ def get_frame_data(start_frames: int) -> int:
 
         frames -= 1
 
-    return len([x for x in [left_data, right_data] if x > CONFIDENCE_THRESHOLD])
+    return len([x for x in [top_data, bottom_data] if x > CONFIDENCE_THRESHOLD])
+
 
 while True:
     print(f"Count:{get_frame_data(16)}")
