@@ -133,4 +133,4 @@ def get_frame_data() -> int:
 
 
 while True:
-    print(f"Count:{get_frame_data(16)}")
+    print(f"Count:{get_frame_data()}")
